@@ -1,0 +1,23 @@
+[gd_scene load_steps=5 format=3 uid="uid://cp304dnmx2lwj"]
+
+[ext_resource type="Script" uid="uid://mregsetkhhfb" path="res://scripts/actor/bullet.gd" id="1_fh0yl"]
+[ext_resource type="Material" uid="uid://c63wypkh3dfye" path="res://assets/materials/wireframe.tres" id="2_lv25w"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ecxuq"]
+size = Vector3(0.05, 0.05, 0.2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_fh0yl"]
+
+[node name="Bullet" type="Area3D"]
+transform = Transform3D(0.998685, 0, 0, 0, 0.998685, 0, 0, 0, 0.998685, 0, 0, 0)
+top_level = true
+script = ExtResource("1_fh0yl")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1.02431, 0, 0, 0, 1.02431, 0, 0, 0, 1.02431, 0, 0, 0)
+shape = SubResource("BoxShape3D_ecxuq")
+
+[node name="CSGMesh3D" type="CSGMesh3D" parent="."]
+transform = Transform3D(0.0506282, 0, 0, 0, 0.0506282, 0, 0, 0, 0.202513, 0, 0, 0)
+mesh = SubResource("BoxMesh_fh0yl")
+material = ExtResource("2_lv25w")

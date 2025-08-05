@@ -1,0 +1,23 @@
+[gd_scene load_steps=2 format=3 uid="uid://bbcymxae6yusi"]
+
+[ext_resource type="Script" uid="uid://bsk8s8qj7r53q" path="res://scripts/UI/main_menu.gd" id="1_2ew5m"]
+
+[node name="SelectHostOrJoin" type="Node2D"]
+script = ExtResource("1_2ew5m")
+
+[node name="JoinGame" type="Button" parent="."]
+offset_left = 21.0
+offset_top = 23.0
+offset_right = 59.0
+offset_bottom = 54.0
+text = "Join"
+
+[node name="HostGame" type="Button" parent="."]
+offset_left = 21.0
+offset_top = 70.0
+offset_right = 59.0
+offset_bottom = 101.0
+text = "Host"
+
+[connection signal="pressed" from="JoinGame" to="." method="_on_join_game_pressed"]
+[connection signal="pressed" from="HostGame" to="." method="_on_host_game_pressed"]

@@ -1,0 +1,97 @@
+[gd_scene load_steps=10 format=3 uid="uid://de17dy8f03kjq"]
+
+[ext_resource type="Script" uid="uid://b6y7p6bwdcmg5" path="res://scripts/actor/player.gd" id="1_r66lb"]
+[ext_resource type="Material" uid="uid://c63wypkh3dfye" path="res://assets/materials/wireframe.tres" id="2_1txc5"]
+[ext_resource type="ArrayMesh" uid="uid://jnrp2wi22kqh" path="res://assets/models/player.obj" id="3_ht1c8"]
+[ext_resource type="Script" uid="uid://c3o0yj5tpg3an" path="res://scripts/actor/camera.gd" id="4_1txc5"]
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_0rdsr"]
+points = PackedVector3Array(0, 0, -1, 0.7, 0, 1, -0.7, 0, 1)
+
+[sub_resource type="Curve" id="Curve_ipu61"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.329562, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_ygxny"]
+curve = SubResource("Curve_ipu61")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_ipu61"]
+lifetime_randomness = 0.4
+emission_shape = 3
+emission_box_extents = Vector3(0, 0, 0.1)
+angle_min = -4.99999
+angle_max = 5.00001
+inherit_velocity_ratio = 1.0
+spread = 0.0
+initial_velocity_min = 6.0
+initial_velocity_max = 8.0
+gravity = Vector3(0, 0, 0)
+scale_min = 0.5
+scale_curve = SubResource("CurveTexture_ygxny")
+color = Color(0, 0, 0, 1)
+turbulence_noise_strength = 0.09
+turbulence_noise_scale = 1.145
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_ipu61"]
+size = Vector2(0.2, 0.2)
+
+[node name="Player" type="CharacterBody3D"]
+collision_layer = 2
+script = ExtResource("1_r66lb")
+
+[node name="PlayerMesh" type="MeshInstance3D" parent="."]
+material_override = ExtResource("2_1txc5")
+mesh = ExtResource("3_ht1c8")
+skeleton = NodePath("../..")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("ConvexPolygonShape3D_0rdsr")
+
+[node name="Thrusters" type="Node3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 0, 0, 0.6)
+
+[node name="Main" type="GPUParticles3D" parent="Thrusters"]
+material_override = ExtResource("2_1txc5")
+emitting = false
+amount = 50
+process_material = SubResource("ParticleProcessMaterial_ipu61")
+draw_pass_1 = SubResource("PlaneMesh_ipu61")
+
+[node name="LeftForward" type="GPUParticles3D" parent="Thrusters"]
+transform = Transform3D(-1, 0, 8.74228e-08, 0, 1, 0, -8.74228e-08, 0, -1, 0.4, 0, 0.7)
+material_override = ExtResource("2_1txc5")
+emitting = false
+amount = 30
+process_material = SubResource("ParticleProcessMaterial_ipu61")
+draw_pass_1 = SubResource("PlaneMesh_ipu61")
+
+[node name="RightForward" type="GPUParticles3D" parent="Thrusters"]
+transform = Transform3D(-1, 0, 2.62268e-07, 0, 1, 0, -2.62268e-07, 0, -1, 0.4, 0, -0.7)
+material_override = ExtResource("2_1txc5")
+emitting = false
+amount = 30
+process_material = SubResource("ParticleProcessMaterial_ipu61")
+draw_pass_1 = SubResource("PlaneMesh_ipu61")
+
+[node name="RightBackward" type="GPUParticles3D" parent="Thrusters"]
+transform = Transform3D(1, 0, -3.49691e-07, 0, 1, 0, 3.49691e-07, 0, 1, 0.3, 0, -0.7)
+material_override = ExtResource("2_1txc5")
+emitting = false
+amount = 30
+process_material = SubResource("ParticleProcessMaterial_ipu61")
+draw_pass_1 = SubResource("PlaneMesh_ipu61")
+
+[node name="LeftBackward" type="GPUParticles3D" parent="Thrusters"]
+transform = Transform3D(1, 0, -5.24537e-07, 0, 1, 0, 5.24537e-07, 0, 1, 0.3, 0, 0.7)
+material_override = ExtResource("2_1txc5")
+emitting = false
+amount = 30
+process_material = SubResource("ParticleProcessMaterial_ipu61")
+draw_pass_1 = SubResource("PlaneMesh_ipu61")
+
+[node name="Camera" type="Camera3D" parent="." node_paths=PackedStringArray("follow")]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0.0738297, 20, -0.119995)
+top_level = true
+script = ExtResource("4_1txc5")
+height = 20.0
+follow = NodePath("..")

@@ -1,0 +1,28 @@
+[gd_scene load_steps=5 format=3 uid="uid://cam7dkdo1hb6o"]
+
+[ext_resource type="Material" uid="uid://c63wypkh3dfye" path="res://assets/materials/wireframe.tres" id="1_72e8q"]
+[ext_resource type="Script" uid="uid://d3x5k2fjfqt8m" path="res://scripts/player_manager.gd" id="4_0rdsr"]
+[ext_resource type="ArrayMesh" uid="uid://c4x7gdymu04iv" path="res://assets/models/suzanne.obj" id="5_ipu61"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_d2op2"]
+
+[node name="Node3D" type="Node3D"]
+
+[node name="Players" type="Node" parent="."]
+script = ExtResource("4_0rdsr")
+
+[node name="Suzanne" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.492758, 4.19343, -2.78023, -3.33741, 2.36291, 2.97248, 3.76512, 1.54568, 2.99867, 8.19329, 3.8147e-06, -12.726)
+material_override = ExtResource("1_72e8q")
+mesh = ExtResource("5_ipu61")
+
+[node name="RigidBody3D" type="RigidBody3D" parent="."]
+transform = Transform3D(1, 0, 0, -2.98023e-08, 1, 0, 0, 0, 1, 6.7513, 1.43051e-06, -13.9639)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="RigidBody3D"]
+transform = Transform3D(6.88045, 0, 0, 0, 6.88045, 0, 0, 0, 6.88045, 1.8025, 0.173382, 1.90135)
+shape = SubResource("BoxShape3D_d2op2")
+
+[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="."]
+_spawnable_scenes = PackedStringArray("uid://de17dy8f03kjq")
+spawn_path = NodePath("../Players")
