@@ -4,6 +4,7 @@ const self_scene = preload("res://actors/player.tscn")
 const bullet_scene = preload("res://actors/bullet.tscn")
 
 @export var resistance = 1.0
+@export var rot_resistance = 30.0
 @export var speed = 50.0
 @export var strafe_speed = 15.0
 @export var bullet_speed = 30.0
@@ -15,7 +16,7 @@ var player_id = 0;
 var positional_data_dirty = false
 var last_synced = -100.0
 
-var facing_towards = Vector2()
+var facing_towards = Vector2(0, 0)
 var move_vector = Vector2()
 var rotation_delta = 0
 var angular_velocity = 0.0
@@ -43,25 +44,30 @@ func _process(delta: float) -> void:
 		$PlayerMesh.visible = false
 	else:
 		$PlayerMesh.visible = true
-		
-	if is_multiplayer_authority() || !GameServer.is_connected:
+
+	if !alive:
+		return
+	
+
+	if multiplayer.peer_connected && is_multiplayer_authority():
 		var input = GlobalInput.get_player_input(player_id)
 		
 		var facing
-		if input._facing_screen_space && Game.camera != null:
-			facing = input._facing - Game.camera.unproject_position(self.global_position)
+		
+		if input._facing_screen_space && get_viewport().get_camera_3d() != null:
+			facing = input._facing - get_viewport().get_camera_3d().unproject_position(self.global_position)
 			facing = facing.normalized()
 		else:
 			facing = input.facing()
 
-		if abs(facing.angle_to(self.facing_towards)) > 0.005:
+		if (facing - facing_towards).length_squared() >  GlobalInput.deadzone * GlobalInput.deadzone:
+			if facing.length_squared() <  GlobalInput.deadzone *  GlobalInput.deadzone:
+				facing = Vector2()
 			self.facing_towards = facing
 			self.positional_data_dirty = true
-		elif facing.length() < 0.05 && self.facing_towards == Vector2():
-			self.facing_towards = Vector2()
-			self.positional_data_dirty = true
+
 		
-		if input.movement().length() > GlobalInput.deadzone:
+		if input.movement().length_squared() > GlobalInput.deadzone * GlobalInput.deadzone:
 			move_vector = Vector2(-input.movement().x, input.movement().y)
 			if move_vector.length() > 0:
 				positional_data_dirty = true
@@ -79,10 +85,15 @@ func _process(delta: float) -> void:
 				self.shoot.rpc()
 		
 
-func _physics_process(delta):	
+func _physics_process(delta):
+	if !alive:
+		return
+	
 	if facing_towards != Vector2():
-		rotation_delta = self.facing_towards.angle_to(self.facing_vec()) - angular_velocity * 0.2
-		angular_velocity += rotation_delta * 0.5
+		rotation_delta = self.facing_towards.angle_to(self.facing_vec()) - angular_velocity * 0.15
+	else:
+		rotation_delta = - angular_velocity * 1 / rot_resistance
+	angular_velocity += rotation_delta
 
 	var _move_vector = move_vector
 	_move_vector.x *= strafe_speed
@@ -91,11 +102,10 @@ func _physics_process(delta):
 	velocity.x += _move_vector.x * delta
 	velocity.z += _move_vector.y  * delta
 
-		
 	update_particle_emmiters()
 
 	rotation.y += angular_velocity * delta
-	angular_velocity *= (1 - resistance * delta)
+
 	velocity *= (1 - resistance * delta)
 	
 	move_and_slide()
@@ -115,6 +125,8 @@ func update_particle_emmiters():
 	right_backward_thruster.emitting = false
 	left_backward_thruster.emitting = false
 	
+	if !alive:
+		return
 	
 	if rotation_delta > 0.1:
 		right_backward_thruster.emitting = true
@@ -136,10 +148,19 @@ func damage(amount):
 		self.last_hit = age
 		if health <= 0:
 			self.kill()
+		else:
+			$Sound/Hit.pitch_scale = randf_range(0.9, 1.1)
+			$Sound/Hit.play()
 		return health
 		
 func kill():
+	$Sound/Explosion.pitch_scale = randf_range(0.9, 1.1)
+	$Sound/Explosion.play()
+	Game.on_player_death.emit(self)
 	alive = false
+	visible = false
+	collision_layer = 0
+	collision_mask = 0
 	
 func invincible():
 	return self.age - self.last_hit < Settings.invincibility_time()
@@ -152,13 +173,16 @@ var last_shot = 0.0
 @rpc("authority", "call_local", "reliable")
 func shoot():
 	var bullet: Bullet = bullet_scene.instantiate()
-	bullet.velocity = Vector3(self.facing_vec().x * bullet_speed, self.facing_vec().y * bullet_speed, 0) + self.velocity
+	bullet.velocity = Vector3(self.facing_vec().x * bullet_speed, 0, self.facing_vec().y * bullet_speed) + self.velocity
 	bullet.player = self
 	bullet.position.x = self.position.x + self.facing_vec().x
 	bullet.position.z = self.position.z + self.facing_vec().y
 	bullet.rotation = self.rotation
 	self.add_child(bullet)
 	last_shot = age
+	
+	$Sound/Shoot.pitch_scale = randf_range(0.9, 1.1)
+	$Sound/Shoot.play()
 	
 	
 func facing_vec() -> Vector2:

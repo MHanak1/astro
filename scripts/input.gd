@@ -36,7 +36,7 @@ func _input(event: InputEvent) -> void:
 	
 	var player_id = PlayerManager.current_player
 	
-	if !GameServer.is_connected:
+	if !GameServer.connected:
 		var is_player_0 = false
 		var player_id_map: Dictionary
 		if is_controller && controller_separate:

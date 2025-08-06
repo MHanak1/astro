@@ -6,8 +6,16 @@ const MAX_CONNECTIONS = 20
 
 @export var lobby: PackedScene
 
+
+
 func _ready():
 	find_child("PlayLocal").grab_focus()
+	multiplayer.connected_to_server.connect(start_game)
+
+	
+func _input(event: InputEvent) -> void:
+	if Input.is_action_pressed("ui_cancel"):
+		get_tree().quit(0)
 
 
 func _on_join_game_pressed():
@@ -16,18 +24,16 @@ func _on_join_game_pressed():
 func _on_address_input_text_submitted(address: String) -> void:
 	join_server(address)
 
-
 func join_server(address):
-	if await GameServer.join_game(address):
-		get_tree().change_scene_to_file("res://scenes/game.tscn")
-		Game.change_scene(lobby.resource_path)
-
+	GameServer.join_game(address)
 
 func _on_host_game_pressed():
-	if GameServer.create_game():
-		get_tree().change_scene_to_file("res://scenes/game.tscn")
-		Game.change_scene(lobby.resource_path)
+	GameServer.create_game()
+	start_game()
 
 func _on_play_local_pressed() -> void:
-		get_tree().change_scene_to_file("res://scenes/game.tscn")
-		Game.change_scene(lobby.resource_path)
+	start_game()
+
+func start_game():
+	get_tree().change_scene_to_file("res://scenes/game.tscn")
+	Game.change_scene(lobby.resource_path)

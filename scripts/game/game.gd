@@ -3,9 +3,12 @@ extends Node3D
 static var camera_locked = false
 static var camera: Camera3D
 
-#func _process(delta: float):
-#	if $Map != null:
-#		$Map.replace_by(current_scene)
+signal on_player_death(player: Player)
+signal on_player_added(player_id: int)
+signal on_player_removed(player_id: int)
+
+signal current_player_changed(new: int)
+
 
 static func player() -> Player:
 	return PlayerManager.get_player(PlayerManager.current_player)
@@ -21,10 +24,7 @@ static func living_player_count() -> int:
 	for player_id in PlayerManager.players:
 		var player = PlayerManager.get_player(player_id)
 		
-		# if the player is not initialised, the player has not yet been killed. this is to prevent the lobby from continuing while players load
-		if player == null:
-			count += 1
-		elif player.alive:
+		if player == null && player.alive:
 			count += 1
 	return count
 
@@ -40,28 +40,18 @@ func change_scene(path):
 
 
 @rpc("call_local", "reliable")
-static func lock_camera(new_camera: Camera3D):
+static func lock_camera(camera: Camera3D):
 	camera_locked = true
-	if camera != null:
-		camera.current = false
-	camera = new_camera
 	camera.make_current()
 
 @rpc("call_local", "reliable")
 static func set_camera(camera: Camera3D):
 	if !camera_locked:
-		if camera != null:
-			camera.current = false
-		camera  = camera
 		camera.make_current()
 	
 
 @rpc("call_local", "reliable")
 static func unlock_camera():
-	print("unlock_camera")
 	camera_locked = false
-	if !player() == null:
-		if camera != null:
-			camera.current = false
-		camera = player().camera()
-		camera.make_current()
+	if player() != null:
+		player().camera().make_current()

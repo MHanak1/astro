@@ -21,4 +21,4 @@ func _physics_process(delta: float) -> void:
 	age += delta
 	if age > max_age:
 		self.queue_free()
-	position += Vector3(velocity.x, 0, velocity.y) * delta
+	position += Vector3(velocity.x, 0, velocity.z) * delta

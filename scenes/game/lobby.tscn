@@ -30,6 +30,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 0, 12)
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 30, 0)
 
 [node name="StaticBody3D" type="StaticBody3D" parent="."]
+collision_layer = 256
+collision_mask = 2
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
 transform = Transform3D(-4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0, 1, -31, 0, 0)
@@ -52,3 +54,7 @@ transform = Transform3D(31, 0, 0, 0, 20, 0, 0, 0, 21.5, 0, 20, 0)
 material_override = ExtResource("2_1kcxf")
 mesh = ExtResource("5_7ih8y")
 skeleton = NodePath("../..")
+
+[node name="SceneChangeTimer" type="Timer" parent="."]
+wait_time = 2.5
+one_shot = true

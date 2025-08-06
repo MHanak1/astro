@@ -7,8 +7,7 @@ signal player_connected(peer_id)
 signal player_disconnected(peer_id)
 signal server_disconnected
 
-var is_connected = false
-var connect_timer = Timer.new()
+static var connected = false
 
 const PORT = 19523
 const DEFAULT_SERVER_IP = "127.0.0.1" # IPv4 localhost
@@ -17,10 +16,6 @@ const MAX_CONNECTIONS = 20
 const main_menu = "res://scripts/UI/main_menu.gd"
 
 func _ready():
-	connect_timer.set_wait_time(0.25)
-	connect_timer.set_one_shot(true)
-	self.add_child(connect_timer)
-	
 	multiplayer.peer_connected.connect(_on_player_connected)
 	multiplayer.peer_disconnected.connect(_on_player_disconnected)
 	multiplayer.connected_to_server.connect(_on_connected_ok)
@@ -40,28 +35,6 @@ func join_game(address = ""):
 		return false
 	multiplayer.multiplayer_peer = peer
 
-	var i = 0
-	while i<20:
-		match peer.get_connection_status():
-			2: # connected
-				is_connected = true
-				break
-			1: # connecting
-				i += 1
-				connect_timer.start()
-				await connect_timer.timeout
-			0: # disconnected
-				print("disconnected")
-				return false
-	
-	if !is_connected:
-		print("timed_out")
-		multiplayer.multiplayer_peer = null
-		return false
-	
-	print("i am ", peer.get_unique_id(), " peers: ", multiplayer.get_peers())
-	return true
-
 
 func create_game():
 	multiplayer.multiplayer_peer = null
@@ -71,7 +44,7 @@ func create_game():
 		return false
 	multiplayer.multiplayer_peer = peer
 
-	is_connected = true
+	connected = true
 	PlayerManager.players.clear()
 	
 	var player_id = PlayerManager.current_player
@@ -106,6 +79,7 @@ func _on_player_connected(id):
 
 @rpc("authority", "reliable")
 func _on_server_connect(player_id):
+	connected = true
 	PlayerManager.create_player(player_id)
 	PlayerManager.make_current(player_id)
 	PlayerManager.set_authority(player_id, multiplayer.get_unique_id())
@@ -136,11 +110,16 @@ func _on_connected_ok():
 
 
 func _on_connected_fail():
+	print("connection failed")
+	connected = false
 	multiplayer.multiplayer_peer = null
+	
 	#get_tree().change_scene_to_file(main_menu)
 
 func _on_server_disconnected():
+	print("connection disconnected")
+	connected = false
 	multiplayer.multiplayer_peer = null
 	PlayerManager.players.clear()
 	server_disconnected.emit()
-	get_tree().change_scene_to_file(main_menu)
+	Game.change_scene(main_menu)
