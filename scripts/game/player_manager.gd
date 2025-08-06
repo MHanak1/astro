@@ -67,11 +67,15 @@ static func reset_player(player_id: int):
 	get_player(player_id).replace_by(Player.create(player_id))
 
 static func delete_player(player_id: int):
+	print(players, " ", player_id)
 	players.erase(player_id)
+	print(players)
 
 static func make_current(player_id):
 	current_player = player_id
 	
 static func set_authority(player_id: int, authority: int):
+	if player_id == 0 && authority != 1:
+		print("uh oh")
 	print("setting authority for ", player_id, ": ", authority)
 	authorities.set(player_id, authority)

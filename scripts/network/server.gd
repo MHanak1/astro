@@ -10,7 +10,7 @@ signal server_disconnected
 var is_connected = false
 var connect_timer = Timer.new()
 
-const PORT = 7000
+const PORT = 19523
 const DEFAULT_SERVER_IP = "127.0.0.1" # IPv4 localhost
 const MAX_CONNECTIONS = 20
 
@@ -33,6 +33,7 @@ func join_game(address = ""):
 
 	if address.is_empty():
 		address = DEFAULT_SERVER_IP
+
 	var peer = ENetMultiplayerPeer.new()
 	var error = peer.create_client(address, PORT)
 	if error:
@@ -41,24 +42,24 @@ func join_game(address = ""):
 
 	var i = 0
 	while i<20:
-		if peer.get_connection_status() == 2:
-			is_connected = true
-			break
-		else:
-			print("aaa")
-			i += 1
-			connect_timer.start()
-			await connect_timer.timeout
+		match peer.get_connection_status():
+			2: # connected
+				is_connected = true
+				break
+			1: # connecting
+				i += 1
+				connect_timer.start()
+				await connect_timer.timeout
+			0: # disconnected
+				print("disconnected")
+				return false
 	
 	if !is_connected:
 		print("timed_out")
 		multiplayer.multiplayer_peer = null
 		return false
 	
-	var player_id = multiplayer.get_peers().size()
-	PlayerManager.create_player(player_id)
-	PlayerManager.make_current(player_id)
-	PlayerManager.set_authority(player_id, peer.get_unique_id())
+	print("i am ", peer.get_unique_id(), " peers: ", multiplayer.get_peers())
 	return true
 
 
@@ -72,13 +73,14 @@ func create_game():
 
 	is_connected = true
 	PlayerManager.players.clear()
-
+	
 	var player_id = PlayerManager.current_player
 	PlayerManager.create_player(player_id)
 	PlayerManager.make_current(player_id)
-	PlayerManager.set_authority(player_id, peer.get_unique_id())
-	return true
+	PlayerManager.set_authority(player_id, multiplayer.get_unique_id())
 
+	
+	return true
 
 func remove_multiplayer_peer():
 	multiplayer.multiplayer_peer = null
@@ -90,42 +92,52 @@ func remove_multiplayer_peer():
 #func player_loaded():
 #	Game.player().positional_data_dirty = true
 
-
 # When a peer connects, send them my player info.
 # This allows transfer of all desired data for each player, not only the unique ID.
 func _on_player_connected(id):
+	if multiplayer.is_server():
+		var player_id = multiplayer.get_peers().size()
+		_on_server_connect.rpc_id(id, player_id)
 	_register_player.rpc_id(id, PlayerManager.current_player)
 	if Game.player() != null:
 		Game.player().positional_data_dirty = true
 	print("player connected")
 	PlayerManager.set_authority(PlayerManager.new_player(), id)
 
-
-@rpc("any_peer", "reliable")
-func _register_player(player_id):
-	var peer_id = multiplayer.get_remote_sender_id()
-	print(multiplayer.get_unique_id(), ": registering player ", player_id)
+@rpc("authority", "reliable")
+func _on_server_connect(player_id):
 	PlayerManager.create_player(player_id)
-	PlayerManager.set_authority(player_id, peer_id)
-	player_connected.emit(player_id)
-
+	PlayerManager.make_current(player_id)
+	PlayerManager.set_authority(player_id, multiplayer.get_unique_id())
+	
+@rpc("any_peer", "call_remote", "reliable")
+func _register_player(player_id):
+	if PlayerManager.get_player(player_id) == null:
+		var peer_id = multiplayer.get_remote_sender_id()
+		print(multiplayer.get_unique_id(), ": registering player ", player_id)
+		PlayerManager.create_player(player_id)
+		PlayerManager.set_authority(player_id, peer_id)
+		player_connected.emit(player_id)
 
 func _on_player_disconnected(id):
 	# if a player with higher sequence number disconnected, take their spot	
-	PlayerManager.delete_player(id)
+	for player in PlayerManager.authorities:
+		if PlayerManager.authorities[player] == id:
+			PlayerManager.delete_player(player)
+
 	player_disconnected.emit(id)
 
 
 func _on_connected_ok():
-	var player_id = multiplayer.get_peers().size()
-	PlayerManager.create_player(player_id)
-	PlayerManager.make_current(player_id)
+	#var player_id = multiplayer.get_peers().size()
+	#PlayerManager.create_player(player_id)
+	#PlayerManager.make_current(player_id)
 	player_connected.emit()
 
 
 func _on_connected_fail():
 	multiplayer.multiplayer_peer = null
-	get_tree().change_scene_to_file(main_menu)
+	#get_tree().change_scene_to_file(main_menu)
 
 func _on_server_disconnected():
 	multiplayer.multiplayer_peer = null
