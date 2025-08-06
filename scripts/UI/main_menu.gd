@@ -4,33 +4,28 @@ const PORT = 46792
 const DEFAULT_SERVER_IP = "127.0.0.1" # IPv4 localhost
 const MAX_CONNECTIONS = 20
 
-var peer = ENetMultiplayerPeer.new()
-@export var game_scene: PackedScene
+@export var lobby: PackedScene
 
-func _on_join_game_pressed(address = ""):
-	if address.is_empty():
-		address = DEFAULT_SERVER_IP
-	var peer = ENetMultiplayerPeer.new()
-	var error = peer.create_client(address, PORT)
-	if error:
-		return error
-	multiplayer.multiplayer_peer = peer
+func _ready():
+	find_child("PlayLocal").grab_focus()
 
-	print(multiplayer.get_peers())
-	get_tree().change_scene_to_file("res://scenes/main_game.tscn")
+
+func _on_join_game_pressed():
+	join_server((find_child("AddressInput") as LineEdit).text)
+
+func _on_address_input_text_submitted(address: String) -> void:
+	join_server(address)
+
+
+func join_server(address):
+	if await GameServer.join_game(address):
+		Game.change_scene(lobby.resource_path)
 
 
 func _on_host_game_pressed():
-	var peer = ENetMultiplayerPeer.new()
-	var error = peer.create_server(PORT, MAX_CONNECTIONS)
-	if error:
-		return error
-	multiplayer.multiplayer_peer = peer
-	
-	print("hiiii")
-	
-	get_tree().change_scene_to_file("res://scenes/main_game.tscn")
+	if GameServer.create_game():
+		Game.change_scene(lobby.resource_path)
 
-func _add_player(id = 0):
-	print(id)
-	PlayerManager.create_player(id)
+
+func _on_play_local_pressed() -> void:
+		Game.change_scene(lobby.resource_path)

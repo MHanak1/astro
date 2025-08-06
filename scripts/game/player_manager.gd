@@ -1,19 +1,27 @@
 class_name PlayerManager extends Node
 
-static var players: Dictionary = {};
-static var player_scene = preload("res://prefabs/player.tscn")
+@export var spawn_positions: Array[Node3D]
 
+static var players: Dictionary = {};
 static var current_player = 1
 
 #func _init() -> void:
 	#create_player(current_player)
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	var children = self.get_children()
 	
 	for player_id in players:
-		if !children.has(players[player_id]):
-			self.add_child(players[player_id])
+		var player: Player = players[player_id]
+		if !children.has(player):
+			self.add_child(player)
+			player.reset_position()
+			player.position = self.spawn_positions[player.nth_player % spawn_positions.size()].position
+	
+	for child in children:
+		if child is Player:
+			if !players.has(child.player_id):
+				child.queue_free()
 
 
 static func player_count():
@@ -33,18 +41,13 @@ static func new_player() -> int:
 	
 @rpc("authority", "call_local", "reliable")
 static func create_player(player_id: int):
+	print("create_player ", player_id)
 	if !players.has(player_id):
-		var new_player: Player = player_scene.instantiate()
-		new_player.player_id = player_id
-		players[player_id] = new_player
+		players[player_id] = Player.create(player_id)
 		
 static func delete_player(player_id: int):
-	if players.has(player_id):
-		var player: Player = players[players]
-		player.queue_free()
+	players.erase(player_id)
 
-static func focus_player(player_id):
+static func make_current(player_id):
 	current_player = player_id
-	
-	var camera: Camera3D = players[player_id].camera()
-	camera.make_current()
+	Game.set_camera(players[current_player].camera())

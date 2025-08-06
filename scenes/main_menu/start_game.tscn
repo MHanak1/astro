@@ -1,0 +1,111 @@
+[gd_scene load_steps=4 format=3 uid="uid://bbcymxae6yusi"]
+
+[ext_resource type="Script" uid="uid://bsk8s8qj7r53q" path="res://scripts/UI/main_menu.gd" id="1_eonee"]
+[ext_resource type="Theme" uid="uid://dv2jjyjos0lpe" path="res://themes/menu_items.tres" id="2_2iey3"]
+[ext_resource type="PackedScene" uid="uid://cam7dkdo1hb6o" path="res://scenes/game/lobby.tscn" id="2_svy01"]
+
+[node name="Control" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_eonee")
+lobby = ExtResource("2_svy01")
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="Columns" type="HBoxContainer" parent="Margin"]
+layout_mode = 2
+
+[node name="LeftColumn" type="VBoxContainer" parent="Margin/Columns"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Local" type="Label" parent="Margin/Columns/LeftColumn"]
+layout_mode = 2
+theme = ExtResource("2_2iey3")
+theme_override_colors/font_color = Color(0, 1, 0, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 30
+text = "Local"
+horizontal_alignment = 1
+
+[node name="PlayLocal" type="Button" parent="Margin/Columns/LeftColumn"]
+layout_mode = 2
+size_flags_vertical = 3
+focus_neighbor_right = NodePath("../../RightColumn/HostGame")
+theme = ExtResource("2_2iey3")
+text = "Play"
+
+[node name="RightColumn" type="VBoxContainer" parent="Margin/Columns"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LAN" type="Label" parent="Margin/Columns/RightColumn"]
+layout_mode = 2
+theme = ExtResource("2_2iey3")
+theme_override_font_sizes/font_size = 30
+text = "LAN"
+horizontal_alignment = 1
+
+[node name="HostGame" type="Button" parent="Margin/Columns/RightColumn"]
+layout_mode = 2
+size_flags_vertical = 3
+focus_neighbor_left = NodePath("../../LeftColumn/PlayLocal")
+focus_neighbor_bottom = NodePath("../JoinGame")
+theme = ExtResource("2_2iey3")
+text = "Host"
+
+[node name="JoinGame" type="Button" parent="Margin/Columns/RightColumn"]
+layout_mode = 2
+size_flags_vertical = 3
+focus_neighbor_left = NodePath("../../LeftColumn/PlayLocal")
+focus_neighbor_top = NodePath("../HostGame")
+focus_neighbor_bottom = NodePath("../MarginContainer/AddressSelector/AddressInput")
+theme = ExtResource("2_2iey3")
+text = "Join"
+
+[node name="MarginContainer" type="MarginContainer" parent="Margin/Columns/RightColumn"]
+layout_mode = 2
+theme_override_constants/margin_left = 5
+
+[node name="AddressSelector" type="HBoxContainer" parent="Margin/Columns/RightColumn/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Address" type="Label" parent="Margin/Columns/RightColumn/MarginContainer/AddressSelector"]
+layout_mode = 2
+size_flags_horizontal = 0
+theme = ExtResource("2_2iey3")
+theme_override_colors/font_color = Color(0, 1, 0, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+text = "Address:"
+horizontal_alignment = 1
+
+[node name="AddressInput" type="LineEdit" parent="Margin/Columns/RightColumn/MarginContainer/AddressSelector"]
+layout_mode = 2
+size_flags_horizontal = 3
+focus_neighbor_left = NodePath("../../../../LeftColumn/PlayLocal")
+focus_neighbor_top = NodePath("../../../JoinGame")
+theme = ExtResource("2_2iey3")
+placeholder_text = "
+"
+
+[connection signal="pressed" from="Margin/Columns/LeftColumn/PlayLocal" to="." method="_on_play_local_pressed"]
+[connection signal="pressed" from="Margin/Columns/RightColumn/HostGame" to="." method="_on_host_game_pressed"]
+[connection signal="pressed" from="Margin/Columns/RightColumn/JoinGame" to="." method="_on_join_game_pressed"]
+[connection signal="text_submitted" from="Margin/Columns/RightColumn/MarginContainer/AddressSelector/AddressInput" to="." method="_on_address_input_text_submitted"]

@@ -11,6 +11,7 @@ var controller_separate = false;
 class PlayerInput:
 	var _movement: Vector2
 	var _facing: Vector2
+	var _facing_screen_space = false
 	var primary = false
 	var secondary = false
 	
@@ -28,16 +29,16 @@ class PlayerInput:
 		return self._facing.normalized()
 
 
-func _input(event: InputEvent) -> void:	
+func _input(event: InputEvent) -> void:
+	if Game.player() == null || Game.camera == null:
+		return
 	var is_controller = false
 	if event is InputEventJoypadButton || event is InputEventJoypadMotion:
 		is_controller = true
 	
-	var is_multiplayer = false
+	var player_id = PlayerManager.current_player
 	
-	var player_id = 0
-	
-	if !is_multiplayer:
+	if !GameServer.is_connected:
 		var is_player_0 = false
 		var player_id_map: Dictionary
 		if is_controller && controller_separate:
@@ -64,7 +65,8 @@ func _input(event: InputEvent) -> void:
 	
 	#mouse
 	if event is InputEventMouseMotion:
-		input._facing = (event.position - (get_viewport().get_visible_rect().size as Vector2 / 2)).normalized()
+		input._facing = event.position
+		input._facing_screen_space = true
 	elif event is InputEventMouseButton:
 		match event.button_index:
 			MOUSE_BUTTON_LEFT:
@@ -130,6 +132,7 @@ func _input(event: InputEvent) -> void:
 
 	#joystick
 	elif event is InputEventJoypadMotion:
+		input._facing_screen_space = false
 		match event.axis:
 			JOY_AXIS_LEFT_X:
 				input._movement.x = event.axis_value
@@ -139,20 +142,21 @@ func _input(event: InputEvent) -> void:
 				input._facing.x = event.axis_value
 			JOY_AXIS_RIGHT_Y:
 				input._facing.y = event.axis_value
-	#print(event.device, ", ", input._movement)
-	#print(event)
 	
 	if input._movement.length() < deadzone:
 		input._movement = Vector2(0, 0)
 	if input._facing.length() < deadzone:
 		input._facing = Vector2(0, 0)
 
+func _notification(notification: int):
+	if notification == NOTIFICATION_APPLICATION_FOCUS_OUT:
+		for input_id in inputs:
+			inputs[input_id]._movement = Vector2()
+
 func get_player_input(player: int) -> PlayerInput:
 	if !inputs.has(player):
 		set_player_input(player, PlayerInput.new())
 	return inputs[player]
 	
-	return inputs[player]
-
 func set_player_input(player: int, input: PlayerInput) -> void:
 	inputs[player] = input

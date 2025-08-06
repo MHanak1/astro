@@ -1,53 +1,101 @@
-class_name Player extends NetworkSyncCharacterBody3D
+class_name Player extends CharacterBody3D
+
+const self_scene = preload("res://actors/player.tscn")
+const bullet_scene = preload("res://actors/bullet.tscn")
 
 @export var resistance = 1.0
 @export var speed = 50.0
 @export var strafe_speed = 15.0
 @export var bullet_speed = 30.0
+@export var min_sync_interval = 0.1
+@export var max_sync_interval = 5.0
 
-var player_id: int;
+var player_id = 0;
+var nth_player = 0;
 
-static var bullet_scene = preload("res://prefabs/bullet.tscn")
+var positional_data_dirty = false
+var last_synced = -100.0
 
+var facing_towards = Vector2()
+var move_vector = Vector2()
 var rotation_delta = 0
+var angular_velocity = 0.0
 
-func _init() -> void:
-	self.name = "Player {0}".format(self.player_id)
+var age = 0.0
+
+func _init():
+	print(self.player_id)
+	self.nth_player = PlayerManager.player_count()
+
+static func create(player_id) -> Player:
+	var new = self_scene.instantiate()
+	new.player_id = player_id
+	new.set_multiplayer_authority(player_id)
+	return new
+	
 
 func _process(delta: float) -> void:
-	var input = GlobalInput.get_player_input(player_id)
-	if input.primary:
-		self.shoot()
+	# something's broken in player creation and i gotta put it here
+	self.name = "Player %d" % player_id
+	age += delta
 
-func _physics_process(delta):
-	var input = GlobalInput.get_player_input(player_id)
-	
-	if input.facing().length() > GlobalInput.deadzone:
-		rotation_delta = input.facing().angle_to(self.facing()) - angular_velocity * 0.2
+	if is_multiplayer_authority() || !GameServer.is_connected:
+		var input = GlobalInput.get_player_input(player_id)
+		
+		var facing
+		if input._facing_screen_space:
+			facing = input._facing - Game.camera.unproject_position(self.global_position)
+			facing = facing.normalized()
+		else:
+			facing = input.facing()
+
+		if abs(facing.angle_to(self.facing_towards)) > 0.005:
+			self.facing_towards = facing
+			self.positional_data_dirty = true
+		elif facing.length() < 0.05 && self.facing_towards == Vector2():
+			self.facing_towards = Vector2()
+			self.positional_data_dirty = true
+		
+		if input.movement().length() > GlobalInput.deadzone:
+			move_vector = Vector2(-input.movement().x, input.movement().y)
+			if move_vector.length() > 0:
+				positional_data_dirty = true
+		elif move_vector != Vector2():
+			move_vector = Vector2()
+			self.positional_data_dirty = true
+
+		if ((age - last_synced) > min_sync_interval && positional_data_dirty) || age - last_synced > max_sync_interval:
+			update_positional_data.rpc(position, velocity, facing_towards, move_vector)
+			last_synced = age
+			self.positional_data_dirty = false
+		
+		if input.primary:
+			if age - last_shot > 0.2:
+				self.shoot.rpc()
+		
+
+func _physics_process(delta):	
+	if facing_towards != Vector2():
+		rotation_delta = self.facing_towards.angle_to(self.facing_vec()) - angular_velocity * 0.2
 		angular_velocity += rotation_delta * 0.5
 
-	else:
-		rotation_delta = 0
-	
-	if input.movement().length() > GlobalInput.deadzone:
-		var move_vector = Vector2(-input.movement().x * strafe_speed, input.movement().y * speed)
-		move_vector = move_vector.rotated(-self.facing().angle_to(Vector2(0, 1)))
-		velocity.x += move_vector.x * delta
-		velocity.z += move_vector.y * delta
+	var _move_vector = move_vector
+	_move_vector.x *= strafe_speed
+	_move_vector.y *= speed
+	_move_vector = _move_vector.rotated(-self.facing_vec().angle_to(Vector2(0, 1)))
+	velocity.x += _move_vector.x * delta
+	velocity.z += _move_vector.y  * delta
 
 		
 	update_particle_emmiters()
 
-	
 	rotation.y += angular_velocity * delta
 	angular_velocity *= (1 - resistance * delta)
 	velocity *= (1 - resistance * delta)
 	
 	move_and_slide()
 
-
 func update_particle_emmiters():
-	var input = GlobalInput.get_player_input(player_id)
 	var thrusters: Node3D = self.get_node("Thrusters")
 
 	var main_thruster: GPUParticles3D = thrusters.get_node("Main")
@@ -69,28 +117,43 @@ func update_particle_emmiters():
 	elif rotation_delta < -0.1:
 		right_forward_thruster.emitting = true
 		left_backward_thruster.emitting = true
-		
-	if input.movement().y > 0.1:
+
+	if move_vector.y > 0.1:
 		main_thruster.emitting = true
-	elif input.movement().y < -0.1:
+	elif move_vector.y < -0.1:
 		right_forward_thruster.emitting = true
 		left_forward_thruster.emitting = true
 
+
 var last_shot = 0.0
+@rpc("authority", "call_local", "reliable")
 func shoot():
-	if age - last_shot > 0.2:
-		var bullet: Bullet = bullet_scene.instantiate()
-		bullet.velocity = Vector3(self.facing().x * bullet_speed, self.facing().y * bullet_speed, 0) + self.velocity
-		bullet.player = self
-		bullet.position.x = self.position.x + self.facing().x
-		bullet.position.z = self.position.z + self.facing().y
-		bullet.rotation = self.rotation
-		self.add_child(bullet)
-		last_shot = age
+	var bullet: Bullet = bullet_scene.instantiate()
+	bullet.velocity = Vector3(self.facing_vec().x * bullet_speed, self.facing_vec().y * bullet_speed, 0) + self.velocity
+	bullet.player = self
+	bullet.position.x = self.position.x + self.facing_vec().x
+	bullet.position.z = self.position.z + self.facing_vec().y
+	bullet.rotation = self.rotation
+	self.add_child(bullet)
+	last_shot = age
 	
 		
-func facing() -> Vector2:
+func facing_vec() -> Vector2:
 	return Vector2.from_angle(-rotation.y - PI/2)
 	
 func camera() -> Camera3D:
 	return self.get_node("Camera")
+	
+	
+#network sync
+@rpc("authority", "call_remote", "unreliable_ordered")
+func update_positional_data(position: Vector3, velocity: Vector3, facing_towards: Vector2, move_vector: Vector2):
+	self.position = position
+	self.velocity = velocity
+	self.facing_towards = facing_towards
+	self.move_vector = move_vector
+	self.positional_data_dirty = false
+	
+func reset_position():
+	self.position = Vector3()
+	self.velocity = Vector3()

@@ -13,23 +13,35 @@ config_version=5
 config/name="Astro"
 run/main_scene="uid://bbcymxae6yusi"
 config/features=PackedStringArray("4.4", "GL Compatibility")
+boot_splash/bg_color=Color(0, 0, 0, 1)
+boot_splash/show_image=false
 config/icon="res://icon.svg"
 
 [autoload]
 
-Renderer="*res://scripts/renderer.gd"
 GlobalInput="*res://scripts/input.gd"
+GameServer="*res://scripts/network/server.gd"
+Game="*res://scripts/game/game.gd"
 
 [display]
 
 window/size/viewport_width=720
 window/size/viewport_height=420
+window/size/mode=2
 window/size/borderless=true
 window/stretch/mode="viewport"
 
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/wakatime/plugin.cfg")
+
+[gui]
+
+theme/custom_font="uid://bsftos5ilcwwe"
+theme/default_font_antialiasing=0
+theme/default_font_hinting=0
+theme/default_font_subpixel_positioning=0
+theme/lcd_subpixel_layout=0
 
 [input]
 
