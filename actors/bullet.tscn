@@ -11,6 +11,7 @@ size = Vector3(0.05, 0.05, 0.2)
 [node name="Bullet" type="Area3D"]
 transform = Transform3D(0.998685, 0, 0, 0, 0.998685, 0, 0, 0, 0.998685, 0, 0, 0)
 top_level = true
+collision_mask = 255
 script = ExtResource("1_fh0yl")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]

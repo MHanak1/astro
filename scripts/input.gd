@@ -30,8 +30,6 @@ class PlayerInput:
 
 
 func _input(event: InputEvent) -> void:
-	if Game.player() == null || Game.camera == null:
-		return
 	var is_controller = false
 	if event is InputEventJoypadButton || event is InputEventJoypadMotion:
 		is_controller = true

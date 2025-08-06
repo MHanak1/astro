@@ -8,7 +8,6 @@ signal player_disconnected(peer_id)
 signal server_disconnected
 
 var is_connected = false
-
 var connect_timer = Timer.new()
 
 const PORT = 7000
@@ -56,8 +55,10 @@ func join_game(address = ""):
 		multiplayer.multiplayer_peer = null
 		return false
 	
-	PlayerManager.create_player(peer.get_unique_id())
-	PlayerManager.make_current(peer.get_unique_id())
+	var player_id = multiplayer.get_peers().size()
+	PlayerManager.create_player(player_id)
+	PlayerManager.make_current(player_id)
+	PlayerManager.set_authority(player_id, peer.get_unique_id())
 	return true
 
 
@@ -71,15 +72,17 @@ func create_game():
 
 	is_connected = true
 	PlayerManager.players.clear()
-	PlayerManager.create_player(peer.get_unique_id())
-	PlayerManager.make_current(peer.get_unique_id())
+
+	var player_id = PlayerManager.current_player
+	PlayerManager.create_player(player_id)
+	PlayerManager.make_current(player_id)
+	PlayerManager.set_authority(player_id, peer.get_unique_id())
 	return true
 
 
 func remove_multiplayer_peer():
 	multiplayer.multiplayer_peer = null
 	PlayerManager.players.clear()
-	#TODO: clear the children nodes as well
 
 
 # Every peer will call this when they have loaded the game scene.
@@ -91,44 +94,41 @@ func remove_multiplayer_peer():
 # When a peer connects, send them my player info.
 # This allows transfer of all desired data for each player, not only the unique ID.
 func _on_player_connected(id):
-	_register_player.rpc_id(id, Game.player().nth_player)
-	Game.player().positional_data_dirty = true
-
+	_register_player.rpc_id(id, PlayerManager.current_player)
+	if Game.player() != null:
+		Game.player().positional_data_dirty = true
+	print("player connected")
+	PlayerManager.set_authority(PlayerManager.new_player(), id)
 
 
 @rpc("any_peer", "reliable")
-func _register_player(nth):
-	var new_player_id = multiplayer.get_remote_sender_id()
-	print(multiplayer.get_unique_id(), ": registering player ", new_player_id)
-	PlayerManager.create_player(new_player_id)
-	PlayerManager.players[new_player_id].nth_player = nth
-	Game.player().nth_player += 1
-	player_connected.emit(new_player_id)
+func _register_player(player_id):
+	var peer_id = multiplayer.get_remote_sender_id()
+	print(multiplayer.get_unique_id(), ": registering player ", player_id)
+	PlayerManager.create_player(player_id)
+	PlayerManager.set_authority(player_id, peer_id)
+	player_connected.emit(player_id)
 
 
 func _on_player_disconnected(id):
-	# if a player with higher sequence number disconnected, take their spot
-	if PlayerManager.players[id].nth_player > Game.player().nth_player:
-		Game.player().nth_player -= 1
-	
+	# if a player with higher sequence number disconnected, take their spot	
 	PlayerManager.delete_player(id)
 	player_disconnected.emit(id)
 
 
 func _on_connected_ok():
-	var peer_id = multiplayer.get_unique_id()
-	PlayerManager.create_player(peer_id)
-	PlayerManager.make_current(peer_id)
-	player_connected.emit(peer_id)
+	var player_id = multiplayer.get_peers().size()
+	PlayerManager.create_player(player_id)
+	PlayerManager.make_current(player_id)
+	player_connected.emit()
 
 
 func _on_connected_fail():
 	multiplayer.multiplayer_peer = null
-	Game.change_scene(main_menu)
-
+	get_tree().change_scene_to_file(main_menu)
 
 func _on_server_disconnected():
 	multiplayer.multiplayer_peer = null
 	PlayerManager.players.clear()
 	server_disconnected.emit()
-	Game.change_scene(main_menu)
+	get_tree().change_scene_to_file(main_menu)

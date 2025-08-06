@@ -11,7 +11,6 @@ const bullet_scene = preload("res://actors/bullet.tscn")
 @export var max_sync_interval = 5.0
 
 var player_id = 0;
-var nth_player = 0;
 
 var positional_data_dirty = false
 var last_synced = -100.0
@@ -23,27 +22,33 @@ var angular_velocity = 0.0
 
 var age = 0.0
 
-func _init():
-	print(self.player_id)
-	self.nth_player = PlayerManager.player_count()
+var health = Settings.max_player_health()
+var last_hit = age
+var alive = true
 
 static func create(player_id) -> Player:
 	var new = self_scene.instantiate()
 	new.player_id = player_id
-	new.set_multiplayer_authority(player_id)
+	#new.set_multiplayer_authority(player_id)
+	new.name = "Player %d" % player_id
 	return new
 	
 
 func _process(delta: float) -> void:
 	# something's broken in player creation and i gotta put it here
-	self.name = "Player %d" % player_id
+	#self.name = "Player %d" % player_id
 	age += delta
-
+	
+	if (self.invincible() && (fmod(self.age, 0.3) > 0.15)) || !alive:
+		$PlayerMesh.visible = false
+	else:
+		$PlayerMesh.visible = true
+		
 	if is_multiplayer_authority() || !GameServer.is_connected:
 		var input = GlobalInput.get_player_input(player_id)
 		
 		var facing
-		if input._facing_screen_space:
+		if input._facing_screen_space && Game.camera != null:
 			facing = input._facing - Game.camera.unproject_position(self.global_position)
 			facing = facing.normalized()
 		else:
@@ -124,6 +129,24 @@ func update_particle_emmiters():
 		right_forward_thruster.emitting = true
 		left_forward_thruster.emitting = true
 
+@rpc("authority", "call_local", "reliable")
+func damage(amount):
+	if alive:
+		health -= amount
+		self.last_hit = age
+		if health <= 0:
+			self.kill()
+		return health
+		
+func kill():
+	alive = false
+	
+func invincible():
+	return self.age - self.last_hit < Settings.invincibility_time()
+
+func on_bullet_hit(bullet: Bullet):
+	if is_multiplayer_authority() && !invincible():
+		damage.rpc(bullet.damage)
 
 var last_shot = 0.0
 @rpc("authority", "call_local", "reliable")
@@ -137,14 +160,13 @@ func shoot():
 	self.add_child(bullet)
 	last_shot = age
 	
-		
+	
 func facing_vec() -> Vector2:
 	return Vector2.from_angle(-rotation.y - PI/2)
 	
 func camera() -> Camera3D:
 	return self.get_node("Camera")
-	
-	
+
 #network sync
 @rpc("authority", "call_remote", "unreliable_ordered")
 func update_positional_data(position: Vector3, velocity: Vector3, facing_towards: Vector2, move_vector: Vector2):
@@ -154,6 +176,4 @@ func update_positional_data(position: Vector3, velocity: Vector3, facing_towards
 	self.move_vector = move_vector
 	self.positional_data_dirty = false
 	
-func reset_position():
-	self.position = Vector3()
-	self.velocity = Vector3()
+	

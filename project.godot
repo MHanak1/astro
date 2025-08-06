@@ -22,6 +22,7 @@ config/icon="res://icon.svg"
 GlobalInput="*res://scripts/input.gd"
 GameServer="*res://scripts/network/server.gd"
 Game="*res://scripts/game/game.gd"
+Settings="*res://scripts/game/settings.gd"
 
 [display]
 
@@ -76,6 +77,7 @@ down={
 
 [physics]
 
+jolt_physics_3d/simulation/areas_detect_static_bodies=true
 3d/default_gravity=0.0
 3d/default_gravity_vector=Vector3(0, 0, 0)
 

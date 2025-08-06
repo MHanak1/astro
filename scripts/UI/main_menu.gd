@@ -19,13 +19,15 @@ func _on_address_input_text_submitted(address: String) -> void:
 
 func join_server(address):
 	if await GameServer.join_game(address):
+		get_tree().change_scene_to_file("res://scenes/game.tscn")
 		Game.change_scene(lobby.resource_path)
 
 
 func _on_host_game_pressed():
 	if GameServer.create_game():
+		get_tree().change_scene_to_file("res://scenes/game.tscn")
 		Game.change_scene(lobby.resource_path)
 
-
 func _on_play_local_pressed() -> void:
+		get_tree().change_scene_to_file("res://scenes/game.tscn")
 		Game.change_scene(lobby.resource_path)
