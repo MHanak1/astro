@@ -1,6 +1,5 @@
 class_name Player extends CharacterBody3D
 
-const self_scene = preload("res://actors/player.tscn")
 const bullet_scene = preload("res://actors/bullet.tscn")
 
 @export var resistance = 1.0
@@ -27,18 +26,20 @@ var health = Settings.max_player_health()
 var last_hit = age
 var alive = true
 
+
 static func create(player_id) -> Player:
-	var new = self_scene.instantiate()
+	var new = load("res://actors/player.tscn").instantiate() # if preloaded the player doesn't render correctly in compatibility
 	new.player_id = player_id
 	#new.set_multiplayer_authority(player_id)
 	new.name = "Player %d" % player_id
 	return new
-	
+
 
 func _process(delta: float) -> void:
-	# something's broken in player creation and i gotta put it here
-	#self.name = "Player %d" % player_id
 	age += delta
+	
+	if $Follow:
+		$Follow.position = position
 	
 	if (self.invincible() && (fmod(self.age, 0.3) > 0.15)) || !alive:
 		$PlayerMesh.visible = false
@@ -189,7 +190,7 @@ func facing_vec() -> Vector2:
 	return Vector2.from_angle(-rotation.y - PI/2)
 	
 func camera() -> Camera3D:
-	return self.get_node("Camera")
+	return $Follow/Camera
 
 #network sync
 @rpc("authority", "call_remote", "unreliable_ordered")
@@ -199,5 +200,3 @@ func update_positional_data(position: Vector3, velocity: Vector3, facing_towards
 	self.facing_towards = facing_towards
 	self.move_vector = move_vector
 	self.positional_data_dirty = false
-	
-	

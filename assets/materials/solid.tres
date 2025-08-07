@@ -1,0 +1,8 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://bivx8klqv7y5d"]
+
+[ext_resource type="Shader" uid="uid://dwehfabj0crx7" path="res://assets/shaders/solid.gdshader" id="1_sul35"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_sul35")
+shader_parameter/color = Color(0, 1, 0, 1)

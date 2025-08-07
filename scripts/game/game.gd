@@ -1,7 +1,6 @@
 extends Node3D
 
-static var camera_locked = false
-static var camera: Camera3D
+static var locked_camera: Camera3D
 
 signal on_player_death(player: Player)
 signal on_player_added(player_id: int)
@@ -41,17 +40,17 @@ func change_scene(path):
 
 @rpc("call_local", "reliable")
 static func lock_camera(camera: Camera3D):
-	camera_locked = true
+	locked_camera = camera
 	camera.make_current()
 
 @rpc("call_local", "reliable")
 static func set_camera(camera: Camera3D):
-	if !camera_locked:
+	if (!locked_camera || !is_instance_valid(locked_camera)) && camera:
 		camera.make_current()
 	
 
 @rpc("call_local", "reliable")
 static func unlock_camera():
-	camera_locked = false
+	locked_camera = null
 	if player() != null:
 		player().camera().make_current()

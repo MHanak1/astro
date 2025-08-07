@@ -1,24 +1,21 @@
-[gd_scene load_steps=13 format=3 uid="uid://de17dy8f03kjq"]
+[gd_scene load_steps=13 format=3 uid="uid://dendbgcxx5aew"]
 
-[ext_resource type="Script" uid="uid://b6y7p6bwdcmg5" path="res://scripts/actor/player.gd" id="1_esgq3"]
-[ext_resource type="Material" uid="uid://c63wypkh3dfye" path="res://assets/materials/wireframe.tres" id="2_kjkj0"]
-[ext_resource type="ArrayMesh" uid="uid://jnrp2wi22kqh" path="res://assets/models/player.obj" id="3_tue77"]
-[ext_resource type="Script" uid="uid://c3o0yj5tpg3an" path="res://scripts/actor/camera.gd" id="4_33vod"]
-[ext_resource type="AudioStream" uid="uid://dpbkynr5fihnx" path="res://assets/sfx/shoot.wav" id="5_kjkj0"]
-[ext_resource type="AudioStream" uid="uid://behmiopwio7nw" path="res://assets/sfx/explosion.wav" id="5_tue77"]
-[ext_resource type="AudioStream" uid="uid://qturuq8bnd7t" path="res://assets/sfx/player_hit.wav" id="7_33vod"]
+[ext_resource type="Material" uid="uid://c63wypkh3dfye" path="res://assets/materials/wireframe.tres" id="1_7e1wf"]
+[ext_resource type="Script" uid="uid://b6y7p6bwdcmg5" path="res://scripts/actor/player.gd" id="1_s28a7"]
+[ext_resource type="ArrayMesh" uid="uid://jnrp2wi22kqh" path="res://assets/models/player.obj" id="3_33vod"]
+[ext_resource type="AudioStream" uid="uid://behmiopwio7nw" path="res://assets/sfx/explosion.wav" id="3_lhd1f"]
+[ext_resource type="AudioStream" uid="uid://dpbkynr5fihnx" path="res://assets/sfx/shoot.wav" id="4_xmipo"]
+[ext_resource type="AudioStream" uid="uid://qturuq8bnd7t" path="res://assets/sfx/player_hit.wav" id="5_a3a31"]
+[ext_resource type="PackedScene" uid="uid://bc8meuvh0jbru" path="res://actors/health_bar.tscn" id="7_33vod"]
 
-[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_0rdsr"]
-points = PackedVector3Array(0, 0, -1, 0.7, 0, 1, -0.7, 0, 1)
-
-[sub_resource type="Curve" id="Curve_ipu61"]
+[sub_resource type="Curve" id="Curve_7e1wf"]
 _data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.329562, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
 point_count = 3
 
-[sub_resource type="CurveTexture" id="CurveTexture_ygxny"]
-curve = SubResource("Curve_ipu61")
+[sub_resource type="CurveTexture" id="CurveTexture_er1rk"]
+curve = SubResource("Curve_7e1wf")
 
-[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_ipu61"]
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_s28a7"]
 lifetime_randomness = 0.4
 emission_shape = 3
 emission_box_extents = Vector3(0, 0, 0.1)
@@ -29,90 +26,96 @@ initial_velocity_min = 6.0
 initial_velocity_max = 8.0
 gravity = Vector3(0, 0, 0)
 scale_min = 0.5
-scale_curve = SubResource("CurveTexture_ygxny")
+scale_curve = SubResource("CurveTexture_er1rk")
 color = Color(0, 0, 0, 1)
 turbulence_noise_strength = 0.09
 turbulence_noise_scale = 1.145
 
-[sub_resource type="PlaneMesh" id="PlaneMesh_ipu61"]
+[sub_resource type="PlaneMesh" id="PlaneMesh_vcid1"]
 size = Vector2(0.2, 0.2)
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_lhd1f"]
+points = PackedVector3Array(0, 0, -1, 0.7, 0, 1, -0.7, 0, 1)
 
 [node name="Player" type="CharacterBody3D"]
 collision_layer = 4
 collision_mask = 858993459
-script = ExtResource("1_esgq3")
-bullet_speed = 40.0
+script = ExtResource("1_s28a7")
 
 [node name="PlayerMesh" type="MeshInstance3D" parent="."]
-material_override = ExtResource("2_kjkj0")
-mesh = ExtResource("3_tue77")
-skeleton = NodePath("../..")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-shape = SubResource("ConvexPolygonShape3D_0rdsr")
+transform = Transform3D(-1, -8.74228e-08, 0, 8.74228e-08, -1, 0, 0, 0, 1, 0, 0, 0)
+material_override = ExtResource("1_7e1wf")
+mesh = ExtResource("3_33vod")
+skeleton = NodePath("")
 
 [node name="Thrusters" type="Node3D" parent="."]
 transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 0, 0, 0.6)
 
 [node name="Main" type="GPUParticles3D" parent="Thrusters"]
-material_override = ExtResource("2_kjkj0")
+material_override = ExtResource("1_7e1wf")
 emitting = false
 amount = 50
 visibility_aabb = AABB(-20, -20, -20, 40, 40, 40)
-process_material = SubResource("ParticleProcessMaterial_ipu61")
-draw_pass_1 = SubResource("PlaneMesh_ipu61")
+process_material = SubResource("ParticleProcessMaterial_s28a7")
+draw_pass_1 = SubResource("PlaneMesh_vcid1")
 
 [node name="LeftForward" type="GPUParticles3D" parent="Thrusters"]
 transform = Transform3D(-0.965926, 0, -0.258819, 0, 1, 0, 0.258819, 0, -0.965926, 0.4, 0, 0.7)
-material_override = ExtResource("2_kjkj0")
+material_override = ExtResource("1_7e1wf")
 emitting = false
 amount = 30
 visibility_aabb = AABB(-20, -20, -20, 40, 40, 40)
-process_material = SubResource("ParticleProcessMaterial_ipu61")
-draw_pass_1 = SubResource("PlaneMesh_ipu61")
+process_material = SubResource("ParticleProcessMaterial_s28a7")
+draw_pass_1 = SubResource("PlaneMesh_vcid1")
 
 [node name="RightForward" type="GPUParticles3D" parent="Thrusters"]
 transform = Transform3D(-0.965926, 0, 0.258819, 0, 1, 0, -0.258819, 0, -0.965926, 0.4, 0, -0.7)
-material_override = ExtResource("2_kjkj0")
+material_override = ExtResource("1_7e1wf")
 emitting = false
 amount = 30
 visibility_aabb = AABB(-20, -20, -20, 40, 40, 40)
-process_material = SubResource("ParticleProcessMaterial_ipu61")
-draw_pass_1 = SubResource("PlaneMesh_ipu61")
+process_material = SubResource("ParticleProcessMaterial_s28a7")
+draw_pass_1 = SubResource("PlaneMesh_vcid1")
 
 [node name="RightBackward" type="GPUParticles3D" parent="Thrusters"]
 transform = Transform3D(0.965926, 0, 0.258819, 0, 1, 0, -0.258819, 0, 0.965926, 0.3, 0, -0.7)
-material_override = ExtResource("2_kjkj0")
+material_override = ExtResource("1_7e1wf")
 emitting = false
 amount = 30
 visibility_aabb = AABB(-20, -20, -20, 40, 40, 40)
-process_material = SubResource("ParticleProcessMaterial_ipu61")
-draw_pass_1 = SubResource("PlaneMesh_ipu61")
+process_material = SubResource("ParticleProcessMaterial_s28a7")
+draw_pass_1 = SubResource("PlaneMesh_vcid1")
 
 [node name="LeftBackward" type="GPUParticles3D" parent="Thrusters"]
 transform = Transform3D(0.965926, 0, -0.25882, 0, 1, 0, 0.25882, 0, 0.965926, 0.3, 0, 0.7)
-material_override = ExtResource("2_kjkj0")
+material_override = ExtResource("1_7e1wf")
 emitting = false
 amount = 30
 visibility_aabb = AABB(-20, -20, -20, 40, 40, 40)
-process_material = SubResource("ParticleProcessMaterial_ipu61")
-draw_pass_1 = SubResource("PlaneMesh_ipu61")
-
-[node name="Camera" type="Camera3D" parent="." node_paths=PackedStringArray("follow")]
-transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0.0738297, 20, -0.119995)
-top_level = true
-script = ExtResource("4_33vod")
-height = 20.0
-follow = NodePath("..")
+process_material = SubResource("ParticleProcessMaterial_s28a7")
+draw_pass_1 = SubResource("PlaneMesh_vcid1")
 
 [node name="Sound" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
 
 [node name="Explosion" type="AudioStreamPlayer3D" parent="Sound"]
-stream = ExtResource("5_tue77")
+stream = ExtResource("3_lhd1f")
 
 [node name="Shoot" type="AudioStreamPlayer3D" parent="Sound"]
-stream = ExtResource("5_kjkj0")
+stream = ExtResource("4_xmipo")
 
 [node name="Hit" type="AudioStreamPlayer3D" parent="Sound"]
-stream = ExtResource("7_33vod")
+stream = ExtResource("5_a3a31")
+
+[node name="Collider" type="CollisionShape3D" parent="."]
+shape = SubResource("ConvexPolygonShape3D_lhd1f")
+
+[node name="Follow" type="Node3D" parent="."]
+top_level = true
+
+[node name="Camera" type="Camera3D" parent="Follow"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 20, 0)
+
+[node name="HealthBar" parent="Follow" node_paths=PackedStringArray("player") instance=ExtResource("7_33vod")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.5)
+player = NodePath("../..")

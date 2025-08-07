@@ -1,0 +1,22 @@
+[gd_scene load_steps=6 format=3 uid="uid://bc8meuvh0jbru"]
+
+[ext_resource type="Script" uid="uid://dus6wgy2sqds6" path="res://scripts/actor/health_bar.gd" id="1_3tduk"]
+[ext_resource type="Material" uid="uid://c63wypkh3dfye" path="res://assets/materials/wireframe.tres" id="2_4nb18"]
+[ext_resource type="Material" uid="uid://bivx8klqv7y5d" path="res://assets/materials/solid.tres" id="2_pbulm"]
+[ext_resource type="ArrayMesh" uid="uid://culgnxlqe8owu" path="res://assets/models/wireframe_plane.obj" id="3_pbulm"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_3tduk"]
+
+[node name="HealthBar" type="Node3D"]
+script = ExtResource("1_3tduk")
+
+[node name="Outline" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.5, 0, 0, 0, 1, 0, 0, 0, 0.2, 0, 0, 0)
+material_override = ExtResource("2_4nb18")
+mesh = ExtResource("3_pbulm")
+
+[node name="Health" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.75, 0, 0, 0, 0.5, 0, 0, 0, 0.1, 0, 0, 0)
+material_override = ExtResource("2_pbulm")
+mesh = SubResource("PlaneMesh_3tduk")
+skeleton = NodePath("../Outline")

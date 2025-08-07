@@ -25,8 +25,8 @@ func _enter_tree() -> void:
 		self.add_child(player)
 		player.position = self.spawn_positions[player.player_id % spawn_positions.size()].position
 		print(player.player_id, ", ", current_player)
-		if player.player_id == current_player:
-			Game.set_camera(player.camera())
+#		if player.player_id == current_player:
+#			Game.set_camera(player.camera())
 
 func _process(_delta: float) -> void:
 	#TODO: change this to use the signals
