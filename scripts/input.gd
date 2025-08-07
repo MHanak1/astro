@@ -76,22 +76,22 @@ func _input(event: InputEvent) -> void:
 	#keyboard
 	elif event is InputEventKey:
 		match event.keycode:
-			KEY_W:
+			KEY_W, KEY_UP:
 				if event.is_pressed():
 					input._movement.y += 1
 				else:
 					input._movement.y = 0
-			KEY_S:
+			KEY_S, KEY_DOWN:
 				if event.is_pressed():
 					input._movement.y -= 1
 				else:
 					input._movement.y = 0
-			KEY_A:
+			KEY_A, KEY_LEFT:
 				if event.is_pressed():
 					input._movement.x -= 1
 				else:
 					input._movement.x = 0
-			KEY_D:
+			KEY_D, KEY_RIGHT:
 				if event.is_pressed():
 					input._movement.x += 1
 				else:

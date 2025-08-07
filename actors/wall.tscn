@@ -1,0 +1,17 @@
+[gd_scene load_steps=4 format=3 uid="uid://534wi1fwlsov"]
+
+[ext_resource type="ArrayMesh" uid="uid://b7wryyp528xg4" path="res://assets/models/wireframe_box.obj" id="1_g32o0"]
+[ext_resource type="Material" uid="uid://c63wypkh3dfye" path="res://assets/materials/wireframe.tres" id="1_m0a3f"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_m0a3f"]
+
+[node name="Wall" type="StaticBody3D"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0)
+shape = SubResource("BoxShape3D_m0a3f")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 1, 0)
+material_override = ExtResource("1_m0a3f")
+mesh = ExtResource("1_g32o0")

@@ -1,0 +1,47 @@
+[gd_scene load_steps=7 format=3 uid="uid://c3gugrvucrbso"]
+
+[ext_resource type="Script" uid="uid://d05y7581ocomy" path="res://scripts/game/scenes/game_scene.gd" id="1_cad8g"]
+[ext_resource type="PackedScene" uid="uid://dndxicc1j2jh0" path="res://actors/border.tscn" id="1_dhefs"]
+[ext_resource type="Material" uid="uid://c63wypkh3dfye" path="res://assets/materials/wireframe.tres" id="1_i5s7t"]
+[ext_resource type="ArrayMesh" uid="uid://c4x7gdymu04iv" path="res://assets/models/suzanne.obj" id="2_dhefs"]
+[ext_resource type="PackedScene" uid="uid://534wi1fwlsov" path="res://actors/wall.tscn" id="4_p4ggc"]
+[ext_resource type="Script" uid="uid://d3x5k2fjfqt8m" path="res://scripts/game/player_manager.gd" id="5_wo24r"]
+
+[node name="Map1" type="Node3D"]
+script = ExtResource("1_cad8g")
+
+[node name="Border" parent="." instance=ExtResource("1_dhefs")]
+transform = Transform3D(60, 0, 0, 0, 40, 0, 0, 0, 60, 0, 0, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(5.64052, 0, 0, 0, 2.82026, 4.88483, 0, -4.88483, 2.82026, 0, 0, 0)
+material_override = ExtResource("1_i5s7t")
+mesh = ExtResource("2_dhefs")
+
+[node name="Wall" parent="." instance=ExtResource("4_p4ggc")]
+transform = Transform3D(5, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 0)
+
+[node name="Wall2" parent="." instance=ExtResource("4_p4ggc")]
+transform = Transform3D(5, 0, 0, 0, 1, 0, 0, 0, 1, -20, 0, 0)
+
+[node name="Wall3" parent="." instance=ExtResource("4_p4ggc")]
+transform = Transform3D(-2.18557e-07, 0, -1, 0, 1, 0, 5, 0, -4.37114e-08, 0, 0, 20)
+
+[node name="Wall4" parent="." instance=ExtResource("4_p4ggc")]
+transform = Transform3D(-2.18557e-07, 0, -1, 0, 1, 0, 5, 0, -4.37114e-08, 0, 0, -20)
+
+[node name="Players" type="Node3D" parent="." node_paths=PackedStringArray("spawn_positions")]
+script = ExtResource("5_wo24r")
+spawn_positions = [NodePath("Spawn1"), NodePath("Spawn2"), NodePath("Spawn3"), NodePath("Spawn4")]
+
+[node name="Spawn1" type="Marker3D" parent="Players"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, -20)
+
+[node name="Spawn2" type="Marker3D" parent="Players"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 20)
+
+[node name="Spawn3" type="Marker3D" parent="Players"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 0, -20)
+
+[node name="Spawn4" type="Marker3D" parent="Players"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 0, 20)

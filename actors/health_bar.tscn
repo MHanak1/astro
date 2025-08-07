@@ -12,6 +12,7 @@ script = ExtResource("1_3tduk")
 
 [node name="Outline" type="MeshInstance3D" parent="."]
 transform = Transform3D(1.5, 0, 0, 0, 1, 0, 0, 0, 0.2, 0, 0, 0)
+visible = false
 material_override = ExtResource("2_4nb18")
 mesh = ExtResource("3_pbulm")
 

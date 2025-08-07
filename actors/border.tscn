@@ -1,0 +1,46 @@
+[gd_scene load_steps=5 format=3 uid="uid://dndxicc1j2jh0"]
+
+[ext_resource type="Material" uid="uid://c63wypkh3dfye" path="res://assets/materials/wireframe.tres" id="1_uh5kk"]
+[ext_resource type="ArrayMesh" uid="uid://b7wryyp528xg4" path="res://assets/models/wireframe_box.obj" id="2_1nytt"]
+
+[sub_resource type="GDScript" id="GDScript_uh5kk"]
+script/source = "class_name Border extends StaticBody3D
+
+#func _ready() -> void:
+#	$CS1.position.x = -(position.x + scale.x )
+#	$CS2.position.x = (position.x + scale.x)
+#	$CS3.position.z = (position.z + scale.z)
+#	$CS4.position.z = -(position.z + scale.z)
+"
+
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_68qex"]
+
+[node name="Border" type="StaticBody3D"]
+collision_layer = 256
+script = SubResource("GDScript_uh5kk")
+
+[node name="CS1" type="CollisionShape3D" parent="."]
+transform = Transform3D(-4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0, 1, -0.5, 0, 0)
+top_level = true
+shape = SubResource("WorldBoundaryShape3D_68qex")
+
+[node name="CS2" type="CollisionShape3D" parent="."]
+transform = Transform3D(4.37114e-08, -1, 8.74228e-08, -1, -4.37114e-08, 0, 3.82137e-15, -8.74228e-08, -1, 0.5, 0, 0)
+top_level = true
+shape = SubResource("WorldBoundaryShape3D_68qex")
+
+[node name="CS3" type="CollisionShape3D" parent="."]
+transform = Transform3D(1.91069e-15, -4.37114e-08, 1, -1, -4.37114e-08, 0, 4.37114e-08, -1, -4.37114e-08, 0, 0, 0.5)
+top_level = true
+shape = SubResource("WorldBoundaryShape3D_68qex")
+
+[node name="CS4" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 1.31134e-07, 4.37114e-08, 4.37114e-08, 4.37114e-08, -1, -1.31134e-07, 1, 4.37114e-08, 0, 0, -0.5)
+top_level = true
+shape = SubResource("WorldBoundaryShape3D_68qex")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.00146, 0, 0, 0, 10.0146, 0, 0, 0, 1.00146, 0, 5, 0)
+material_override = ExtResource("1_uh5kk")
+mesh = ExtResource("2_1nytt")
+skeleton = NodePath("../..")

@@ -35,5 +35,5 @@ func _on_play_local_pressed() -> void:
 	start_game()
 
 func start_game():
-	get_tree().change_scene_to_file("res://scenes/game.tscn")
+	get_tree().change_scene_to_file("res://scenes/game/lobby.tscn")
 	Game.change_scene(lobby.resource_path)

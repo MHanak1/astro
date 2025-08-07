@@ -1,17 +1,13 @@
-[gd_scene load_steps=7 format=3 uid="uid://cam7dkdo1hb6o"]
+[gd_scene load_steps=4 format=3 uid="uid://cam7dkdo1hb6o"]
 
 [ext_resource type="Script" uid="uid://d05y7581ocomy" path="res://scripts/game/scenes/game_scene.gd" id="1_7ih8y"]
 [ext_resource type="Script" uid="uid://d3x5k2fjfqt8m" path="res://scripts/game/player_manager.gd" id="1_xg681"]
-[ext_resource type="Material" uid="uid://c63wypkh3dfye" path="res://assets/materials/wireframe.tres" id="2_1kcxf"]
-[ext_resource type="ArrayMesh" uid="uid://b7wryyp528xg4" path="res://assets/models/wireframe_box.obj" id="4_7ih8y"]
-[ext_resource type="ArrayMesh" uid="uid://c4x7gdymu04iv" path="res://assets/models/suzanne.obj" id="5_l77js"]
-
-[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_l77js"]
+[ext_resource type="PackedScene" uid="uid://dndxicc1j2jh0" path="res://actors/border.tscn" id="3_l77js"]
 
 [node name="Node3D" type="Node3D"]
 script = ExtResource("1_7ih8y")
 
-[node name="Players" type="Node" parent="." node_paths=PackedStringArray("spawn_positions")]
+[node name="Players" type="Node3D" parent="." node_paths=PackedStringArray("spawn_positions")]
 script = ExtResource("1_xg681")
 spawn_positions = [NodePath("Spawn1"), NodePath("Spawn2"), NodePath("Spawn3"), NodePath("Spawn4")]
 
@@ -27,33 +23,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 0, -12)
 [node name="Spawn4" type="Marker3D" parent="Players"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 0, 12)
 
-[node name="StaticBody3D" type="StaticBody3D" parent="."]
-collision_layer = 256
-collision_mask = 2
+[node name="Border" parent="." instance=ExtResource("3_l77js")]
+transform = Transform3D(65, 0, 0, 0, 40, 0, 0, 0, 43, 0, 0, 0)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
-transform = Transform3D(-4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0, 1, -31, 0, 0)
-shape = SubResource("WorldBoundaryShape3D_l77js")
-
-[node name="CollisionShape3D2" type="CollisionShape3D" parent="StaticBody3D"]
-transform = Transform3D(4.37114e-08, -1, 8.74228e-08, -1, -4.37114e-08, 0, 3.82137e-15, -8.74228e-08, -1, 31, 0, 0)
-shape = SubResource("WorldBoundaryShape3D_l77js")
-
-[node name="CollisionShape3D3" type="CollisionShape3D" parent="StaticBody3D"]
-transform = Transform3D(1.91069e-15, -4.37114e-08, 1, -1, -4.37114e-08, 0, 4.37114e-08, -1, -4.37114e-08, 0, 0, 21.5)
-shape = SubResource("WorldBoundaryShape3D_l77js")
-
-[node name="CollisionShape3D4" type="CollisionShape3D" parent="StaticBody3D"]
-transform = Transform3D(1, 1.31134e-07, 4.37114e-08, 4.37114e-08, 4.37114e-08, -1, -1.31134e-07, 1, 4.37114e-08, 0, 0, -21.5)
-shape = SubResource("WorldBoundaryShape3D_l77js")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D"]
-transform = Transform3D(62, 0, 0, 0, 40, 0, 0, 0, 43, 0, 20, 0)
-material_override = ExtResource("2_1kcxf")
-mesh = ExtResource("4_7ih8y")
-skeleton = NodePath("../..")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-transform = Transform3D(5.64052, 0, 0, 0, 5.64052, 0, 0, 0, 5.64052, 0, 0, 0)
-material_override = ExtResource("2_1kcxf")
-mesh = ExtResource("5_l77js")
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 30, 0)

@@ -157,12 +157,12 @@ func damage(amount):
 func kill():
 	$Sound/Explosion.pitch_scale = randf_range(0.9, 1.1)
 	$Sound/Explosion.play()
-	Game.on_player_death.emit(self)
 	alive = false
 	visible = false
 	collision_layer = 0
 	collision_mask = 0
-	
+	Game.on_player_death.emit(self)
+
 func invincible():
 	return self.age - self.last_hit < Settings.invincibility_time()
 
